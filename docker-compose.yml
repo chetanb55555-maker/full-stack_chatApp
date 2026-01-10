@@ -1,0 +1,50 @@
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    networks:
+      - fullstack-chatapp
+
+  backend:
+    build:
+      context: ./backend
+    image: chat-backend
+    container_name: backend
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongoadmin:secret@mongodb:27017/dbname?authSource=admin
+      JWT_SECRET: super_secret_key_123
+      PORT: 5001
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    networks:
+      - fullstack-chatapp
+
+  frontend:
+    build:
+      context: ./frontend
+    image: chat-frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - fullstack-chatapp
+
+networks:
+  fullstack-chatapp:
+    driver: bridge
+
+volumes:
+  mongo-data:
+
